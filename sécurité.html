@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.0.0/html2canvas.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/renderers/CSS3DRenderer.js"></script> -->
+
+    <link rel="stylesheet" href="myStyle.css">
+  </head>
+ 
+  <body > 
+     <canvas id = "myCanvas"></canvas>
+   
+
+  <script>
+    
+    // create the scene
+var scene = new THREE.Scene();
+      //Add light
+      var light = new THREE.AmbientLight(0xffffff);
+      scene.add(light); 
+
+      // Create a camera
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(2, 5, -10);
+     camera.lookAt(6,3,10);
+      
+      // Create a renderer
+      // var renderer = new THREE.WebGLRenderer( );
+      var renderer = new THREE.WebGLRenderer({canvas: document.getElementById("myCanvas")});
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0xffffff);
+      renderer.autoClearColor = true;
+      document.body.appendChild(renderer.domElement);
+    
+    
+       // create control
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.update();
+      
+       // recuperation du controle  
+       function animateOrbitControls() {
+        controls.update();
+         controls.target.set(0, 2.5, 5);
+        //camera.position.z += 0.001;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animateOrbitControls);
+         
+      }
+    
+    // chargement de la monobrosse et du film napo
+   var monoObj = "https://cdn.glitch.global/75b2ee89-061d-43b5-9e9f-59fd1a843032/monoPaintDisc.glb?v=1673883984689";
+   
+    var script1 = document.createElement('script');
+  script1.src = "loadVideos.js?url=https://cdn.glitch.me/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/napo-005-clean-sweep.mp4?v=1678781656144";
+  //    script1.dataset.url =  encodeURIComponent(napoVid); 
+  document.body.appendChild(script1);
+    
+  var script2 = document.createElement('script');
+  script2.src = 'loadObject.js';
+  script2.dataset.url =  encodeURIComponent(monoObj); 
+  document.body.appendChild(script2);
+     
+ // add plane sol
+    var texture = new THREE.TextureLoader().load("https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/carrelage.jpg?v=1675268522240");      
+var geometry = new THREE.PlaneGeometry( 10, 15 );
+geometry.rotateX(THREE.Math.degToRad(90));
+     // geometry.position.set(0,0,-5);
+var material = new THREE.MeshBasicMaterial({
+  map: texture,
+  side: THREE.DoubleSide,
+  transparent: true,
+  
+});
+var planeSol = new THREE.Mesh( geometry, material );
+scene.add( planeSol );
+      planeSol.position.set(0,0,-2.5);
+    
+    // add process plane
+       //add process Plane /////////////////////////////////////////////////////////////////
+      
+      var photo = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/risque%20glissade.png?v=1678870893371"
+      var processTexture = new THREE.TextureLoader().load(photo);  
+      var material = new THREE.MeshBasicMaterial( { map: processTexture, side: THREE.DoubledSide  }  );     
+      var processPlane = new THREE.PlaneGeometry(5, 5);
+     
+      let processScreen = new THREE.Mesh(processPlane,material);
+      processScreen.position.set(-5,2.5,2.5);
+      processScreen.rotateY((THREE.Math.degToRad(90)));
+     processScreen.name = "panneau"
+      scene.add(processScreen);
+    
+  
+       //add danger glissade sprite /////////////////////////////////////////////////////////////////
+      
+      var danger1Photo = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/baliser.jpg?v=1678870996888"
+      var danger1Texture = new THREE.TextureLoader().load(danger1Photo);
+     
+ 
+    
+    var glissMaterial = new THREE.SpriteMaterial(  
+      { map: danger1Texture, 
+         side: THREE.DoubleSide ,
+         opacity:0.7, 
+         transparent:true }  );
+    var gliss = new THREE.Sprite(glissMaterial); 
+
+    
+    gliss.position.set(2.5,0.5,1);
+    gliss.name = "glissade";
+    //gliss.rotateX((THREE.Math.degToRad(90)));
+    scene.add(gliss);
+    
+      //add danger electrique sprite /////////////////////////////////////////////////////////////////
+      
+      var danger2Photo = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/risque%20electrique.png?v=1678872664488"
+      var danger2Texture = new THREE.TextureLoader().load(danger2Photo);  
+      var elecMaterial = new THREE.SpriteMaterial(
+        { map: danger2Texture, 
+         side: THREE.DoubleSide ,
+         opacity:0.5, 
+         transparent:true }  );     
+      var elec = new THREE.Sprite(elecMaterial);
+    
+    elec.position.set(1,2,-5);
+    elec.name = "electrique";
+    
+    scene.add(elec);
+
+    
+    // add raycaster
+var raycaster = new THREE.Raycaster(); // Create a new Raycaster
+ if(isMobile())  {
+   
+   console.log("ismobile"+isMobile());
+   console.log(navigator.userAgent);
+window.addEventListener('touchstart', onTouchStart, false);
+// window.addEventListener('touchmove', onTouchMove, false);
+   
+ } else{
+    
+window.addEventListener('mousemove', onMouseMove, false); // Add a mousemove event listener to the window object
+window.addEventListener('click', onClick, false); // Add a click event listener to the window object
+ } 
+    
+function isMobile(){
+// Check the user agent string to see if it contains "Mobile"
+  return /Mobi/i.test(navigator.userAgent);  
+}
+    
+var mouse = new THREE.Vector2(); // Create a new Vector2 to store the mouse coordinates
+
+function onMouseMove(event) {
+  // Calculate the mouse position relative to the viewport
+    
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+    
+    
+
+function onClick(event) {
+  // Use the Raycaster to check for intersections between the mouse and the objects in the scene
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(scene.children, true);
+
+  // If there is at least one intersection, trigger your function
+  if (intersects.length > 0) {
+    
+    var object = intersects[0].object;
+    
+    if(object.name === "electrique"){
+      console.log(object);
+      electricRun();
+    }
+    else if (object.name === "glissade"){
+      console.log(object);
+      glissadeRun();
+    }
+      else if(object.name === "movieScreen"){
+           
+         
+           
+           var clip = document.getElementById("clipGlitch");
+           
+           console.log(clip);
+            if (clip.paused) {
+      clip.play();
+    } else {
+      clip.pause();
+    }
+         }
+    else{
+     console.log(object); 
+    }
+      
+ }
+}
+    
+    function onTouchStart(event){
+      event.preventDefault();
+
+  const touch = event.touches[ 0 ];
+  const x = ( touch.clientX / window.innerWidth ) * 2 - 1;
+  const y = - ( touch.clientY / window.innerHeight ) * 2 + 1;
+
+  raycaster.setFromCamera( new THREE.Vector2( x, y ), camera );
+       var intersects = raycaster.intersectObjects(scene.children, true);
+       if (intersects.length > 0) {
+    
+    var object = intersects[0].object;
+    
+    if(object.name === "electrique"){
+      console.log(object);
+      electricRun();
+    }
+    else if (object.name === "glissade"){
+      console.log(object);
+      glissadeRun();
+    }
+    
+         else if(object.name === "movieScreen"){
+           
+         
+           
+           var clip = document.getElementById("clipGlitch");
+           
+           console.log(clip);
+            if (clip.paused) {
+      clip.play();
+    } else {
+      clip.pause();
+    }
+         }
+         else{
+     console.log(object); 
+    }
+      
+ }
+      
+    }
+    var  elecClip = document.createElement('video');
+elecClip.src = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/chocElec.mp4?v=1679040109234";
+elecClip.loop = true;
+elecClip.muted = true;
+elecClip.play();
+elecClip.crossOrigin="anonymous";
+    
+  var  glissClip = document.createElement('video');
+glissClip.src = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/risqueChute.mp4?v=1678886698570";
+glissClip.loop = true;
+glissClip.muted = true;
+glissClip.play();
+glissClip.crossOrigin="anonymous";  
+    
+
+
+function electricRun() {
+  var film = scene.getObjectByName('movieScreen');
+  var image = scene.getObjectByName('panneau');
+
+var elecMovie = new THREE.VideoTexture(elecClip);
+var elecImage = new THREE.TextureLoader().load("https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/danger%20Electrique.jpeg?v=1678876489210")
+ 
+film.material.map = elecMovie;
+image.material.map = elecImage;
+  
+elecMovie.needsUpdate = true;
+elecImage.needsUpdate = true;
+  
+}
+    
+    function glissadeRun(){
+  var film = scene.getObjectByName('movieScreen');
+  var image = scene.getObjectByName('panneau');
+var glissMovie = new THREE.VideoTexture(glissClip);
+var glissImage = new THREE.TextureLoader().load("https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/risque%20glissade.png?v=1678870893371")
+
+film.material.map = glissMovie;
+image.material.map = glissImage;
+  
+glissMovie.needsUpdate = true;
+glissImage.needsUpdate = true;
+  
+}
+
+// animate the scene
+function animate() {
+  requestAnimationFrame(animate);
+   //comment out the following line to test if the video texture is displayed correctly
+  //animateOrbitControls();
+  renderer.render(scene, camera);
+}
+ animate();
+    </script>   
+    
+
+<!--  chargement de la vidéo Napo
+var napoVid = "https://cdn.glitch.me/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/napo-005-clean-sweep.mp4?v=1678781656144"; -->
+  </body>
+</html>

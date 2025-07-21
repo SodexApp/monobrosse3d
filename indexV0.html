@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.0.0/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/renderers/CSS3DRenderer.js"></script>
+
+    <link rel="stylesheet" href="myStyle.css">
+  </head>
+ 
+  <body > 
+       <div>
+        <ul>
+        <li style="float:left"><a class="active" href="./index.html">Monobrosse</a></li>
+        <li><a href="./movieCube.html">Videos</a></li>
+        <li><a href="./dosage.html">Dosage</a></li>
+        <li><a href="./tracage.html">Traçage</a></li>   
+        </ul>
+    </div>
+
+    <div>
+      <canvas id = "myCanvas"></canvas>
+<!--     <iframe id = "lustrageVid" src="https://drive.google.com/file/d/1z75maR3JAGz-kl34ILJC3_pGYzh9TdN4/preview" autoplay></iframe>
+      <iframe id="clipUrl"  src = "https://drive.google.com/file/d/0B0t7MAxtbREAYnNQaThpVW5JR3RtWW9EaFJfQVVPb1dNZkx3/preview" autoplay></iframe> -->
+<!--         <video id = "clipGlitch" src = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/Vid%C3%A9o%20(1).mov?v=1674741746926" width = "300px" height = "200px" crossorigin="anonymous" autoplay hidden ></video> -->
+      
+
+<!-- <button id= "animate">animer</button>
+<button id="stopBtn">Stop Animation</button>
+<button id = "sol">sol</button>
+<button id = "disc">disque</button>
+      <br> -->
+
+        
+      </div>
+      <div id = "buttonLine">
+        <button id ="step1">1</button>
+        <button id ="step2">2</button>
+        <button id ="step3">3</button>
+        <button id ="step4">4</button>
+        <button id="start-recording" >
+          play 
+           <span id="recording-indicator" style = "display:none"></span> 
+        </button>
+        <button id="stop-recording">pause</button>
+       
+      </div>      
+  <script>
+     
+      // Create a scene
+      var scene = new THREE.Scene();
+
+      //Add light
+      var light = new THREE.AmbientLight(0xffffff);
+      scene.add(light); 
+      // axe helper
+      // const axesHelper = new THREE.AxesHelper(5);
+      // scene.add(axesHelper);
+
+      // Create a camera
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(2, 5, -10);
+     camera.lookAt(2,3,10);
+      
+      // Create a renderer
+      // var renderer = new THREE.WebGLRenderer( );
+      var renderer = new THREE.WebGLRenderer({canvas: document.getElementById("myCanvas")});
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0xffffff);
+      renderer.autoClearColor = true;
+      document.body.appendChild(renderer.domElement);
+
+      
+      // add plane sol
+      
+var texture = new THREE.TextureLoader().load("https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/parquet.jpg?v=1675152195035");      
+var geometry = new THREE.PlaneGeometry( 10, 15 );
+geometry.rotateX(THREE.Math.degToRad(90));
+     // geometry.position.set(0,0,-5);
+var material = new THREE.MeshBasicMaterial({
+  map: texture,
+  side: THREE.DoubleSide,
+  transparent: true,
+  
+});
+var planeSol = new THREE.Mesh( geometry, material );
+scene.add( planeSol );
+      planeSol.position.set(0,0,-2.5);
+    
+     
+       // create control
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.update();
+      
+       // recuperation du controle  
+       function animateOrbitControls() {
+        controls.update();
+         controls.target.set(0, 2.5, 5);
+        //camera.position.z += 0.001;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animateOrbitControls);
+         
+      }
+       
+      //add disque mono cylindrique
+      // create a circle with radius of 50 double face
+      // const circleGeometry = new THREE.CircleBufferGeometry(1, 32, 0, Math.PI * 2);
+      const circleGeometry = new THREE.CylinderGeometry(0.8, 0.8,0.2, 15);
+     // circleGeometry .rotateX(THREE.Math.degToRad(90));
+      const circleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide  });
+      const circle = new THREE.Mesh(circleGeometry, circleMaterial);   
+      scene.add(circle);
+      circle.position.set(0,0.1,0);
+         
+          window.onload = function(){    
+            loadObject();
+            loadReservoir();
+            animateOrbitControls();
+          
+          }; 
+      
+ 
+  var monobrosse; // créer l'objet monobrosse pour l'utiliser apres dans animate et change texture
+  var reservoir;
+  const groupMono = new THREE.Group();
+      
+      groupMono.add(circle);
+      
+        // add imported object  monobrosse 
+      
+  function handleLoadedObject(gltf) {
+  var gltfMat = gltf.material;
+  if (Array.isArray(gltfMat)) {
+    console.log("The object has multiple materials.");
+  } else {
+    console.log("The object has a single material.");
+  }
+}
+      // wrap the loader code in a separate function
+      function loadObject(){
+      var loader = new THREE.GLTFLoader();
+      loader.load(
+        "https://cdn.glitch.global/75b2ee89-061d-43b5-9e9f-59fd1a843032/monoPaintDisc.glb?v=1673883984689",
+        function (gltf) {
+          monobrosse= gltf;
+          console.log("gltf loaded successfully");
+          // console.log(gltf.scene.scale);
+         //scene.add(monobrosse.scene);
+          var gltfObject = monobrosse.scene.children[0]; 
+          console.log(gltfObject);    
+          gltfObject.position.set(-0.2,-0.2,-0.7);
+            groupMono.add(gltfObject);
+     
+            
+         handleLoadedObject(monobrosse);
+          console.log(monobrosse);
+          return monobrosse;
+        },
+        undefined,
+        function (error) {
+          console.log("Error loading gltf:", error);
+        }      
+      );  
+   }  
+      // chargement reservoir
+            // wrap the loader code in a separate function
+      function loadReservoir(){
+      var loader = new THREE.GLTFLoader();
+      loader.load(
+        "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/reservoir.glb?v=1675413937994",
+        function (gltf) {
+          reservoir= gltf;
+          console.log("gltf loaded successfully");
+          // console.log(gltf.scene.scale);
+         //scene.add(reservoir.scene);
+          var gltfObject = reservoir.scene.children[0]; 
+          console.log(gltfObject);    
+          gltfObject.position.set(-0.2,2.7,-0.7);
+          gltfObject.scale.set(0.01,0.01,0.01);
+          gltfObject.rotateX(THREE.Math.degToRad(-10));
+          
+          groupMono.add(gltfObject);
+            // Position the camera  
+          // renderer.render(scene, camera);
+          //   camera.position.z = -5;  
+            
+         handleLoadedObject(reservoir);
+          console.log(reservoir);
+          return reservoir;
+        },
+        undefined,
+        function (error) {
+          console.log("Error loading gltf:", error);
+        }      
+      );  
+   }     
+      scene.add(groupMono);
+     
+      //add process Plane /////////////////////////////////////////////////////////////////
+      
+      var photo = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/disque_s3m.jpg?v=1675426903770"
+      var processTexture = new THREE.TextureLoader().load(photo);
+     
+      
+      var material = new THREE.MeshBasicMaterial( { map: processTexture, side: THREE.DoubledSide  }  );     
+      var processPlane = new THREE.PlaneGeometry(5, 5);
+     
+      let processScreen = new THREE.Mesh(processPlane,material);
+      processScreen.position.set(-2.5,2.5,5);
+      processScreen.rotateY((THREE.Math.degToRad(180)));
+      scene.add(processScreen);
+    
+    // add CSS3D file (produced in insertHtmlinPlane)
+      
+     const loader = new THREE.ObjectLoader();
+        loader.load("css3d-scene.json", function (object) {
+          scene.add(object);
+        })
+
+   
+      
+       // add webcam///////////////////////////////////////////////////////////////////
+      
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+      var webcam = document.createElement('video');
+      webcam.id ="webcam";
+            document.getElementById('myCanvas').appendChild(webcam);
+            console.log(document.getElementById('webcam'));
+      webcam.width = 100;
+      webcam.height = 75;
+      webcam.autoplay = true;
+      
+          navigator.getUserMedia({
+              video: true
+          }, function (stream) {
+           // console.log(stream)
+              webcam.srcObject = stream;
+          }, function (error) {
+              console.log("Couldn't start video stream.");
+          });
+// installation d'un "moniteur" webcam
+      var planeGeometry = new THREE.PlaneGeometry(2, 1.5);
+
+      var texture = new THREE.VideoTexture( webcam );
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.format = THREE.RGBFormat;
+
+      var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.FrontSide  }  );
+      var mesh = new THREE.Mesh( planeGeometry, material );
+      mesh.rotateY((THREE.Math.degToRad(150)));
+      mesh.rotateX((THREE.Math.degToRad(30)))
+      mesh.position.set(-3,6,4)
+      
+      scene.add( mesh ); 
+      
+      // add recorded video to the back pane/////////////////////////////////////////////////////////
+       // Create an array to hold the recorded chunks
+                let recordedChunks = [];
+
+                    // Get the video element that will display the webcam feed
+              const video = document.getElementById("webcam");
+
+              // Create a MediaRecorder object to handle recording
+              let mediaRecorder;
+
+              // Get the webcam stream
+              navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                  .then(stream => {
+                      // Assign the stream to the video element
+                      video.srcObject = stream;
+                     
+                  })
+                  .catch(err => {
+                      // Handle any errors
+                      console.error("Error accessing webcam:", err);
+                  });
+// recording indicator
+const recordIndicator = document.getElementById("recording-indicator");
+ let isRecording = false; 
+ 
+                    // To start recording
+              function startRecording() {
+                  isRecording = true;
+                  recordIndicator.style.display = "block";
+                  mediaRecorder = new MediaRecorder(video.srcObject);
+                  mediaRecorder.ondataavailable = handleDataAvailable;
+                  mediaRecorder.start();
+                console.log(recordedChunks);
+              }
+
+              // To stop recording
+              function stopRecording() {
+                 isRecording = false;
+                 recordIndicator.style.display = "none";        
+                 mediaRecorder.stop();
+                 console.log("stop record"+ isRecording);
+              }
+                    // Get the start and stop recording buttons
+              const startButton = document.getElementById("start-recording");
+              const stopButton = document.getElementById("stop-recording");
+
+              // Add click event listeners to the buttons
+              startButton.addEventListener("click", startRecording);
+              stopButton.addEventListener("click", stopRecording);
+
+
+var camCall =0;
+function handleDataAvailable(event) {
+  
+  if (camCall<4){
+  
+  // Add the recorded chunk to the array
+  recordedChunks.push(event.data);
+  
+  // create a blob
+  const recordedBlob = new Blob(recordedChunks);
+
+  // create url
+  const url = URL.createObjectURL(recordedBlob);
+  
+      var clip = document.createElement('video');
+      //clip.id ="clipGlitch";
+      clip.src = url;//"https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/Vid%C3%A9o%20(1).mov?v=1674741746926";
+      //clip.src ="https://drive.google.com/file/d/1z75maR3JAGz-kl34ILJC3_pGYzh9TdN4/preview"
+      clip.crossOrigin="anonymous";
+      document.getElementById('myCanvas').appendChild(clip);
+      clip.width = 320;
+      clip.height = 240;
+      clip.autoplay = true;
+      var clipTexture = new THREE.VideoTexture(clip);
+
+      clipTexture.minfilter = THREE.linearFilter;
+      clipTexture.magfilter = THREE.linearFilter;
+    
+      var movieMaterial = new THREE.MeshBasicMaterial({
+        map:clipTexture,
+        side:THREE.DoubleSide,
+        toneMapped:false,
+        flipY:true
+      });
+      
+      let movieGeometry = new THREE.PlaneGeometry(2.25,2);
+      //let movieGeometry = new THREE.BoxGeometry(5,5,5)
+      let movieScreen = new THREE.Mesh(movieGeometry,movieMaterial);
+      movieScreen.position.set(-5,2,-3*camCall);
+    movieScreen.rotateY((THREE.Math.degToRad(90)));
+      scene.add(movieScreen);
+    camCall++;
+  }
+          
+}
+      
+      //add video///////////////////////////////////////////////////////////////////////////////////
+      
+      var clip = document.createElement('video');
+      clip.id ="clipGlitch";
+      clip.src = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/Vid%C3%A9o%20(1).mov?v=1674741746926";
+      //clip.src ="https://drive.google.com/file/d/1z75maR3JAGz-kl34ILJC3_pGYzh9TdN4/preview"
+      clip.crossOrigin="anonymous";
+      document.getElementById('myCanvas').appendChild(clip);
+      //console.log(document.getElementById('clip'));
+      clip.width = 320;
+      clip.height = 240;
+      clip.autoplay = true;
+      //var clip = document.getElementById('clipGlitch');
+      var clipTexture = new THREE.VideoTexture(clip);
+
+      clipTexture.minfilter = THREE.linearFilter;
+      clipTexture.magfilter = THREE.linearFilter;
+    
+      var movieMaterial = new THREE.MeshBasicMaterial({
+        map:clipTexture,
+        side:THREE.FrontSide,
+        toneMapped:false,
+        flipY:true
+      });
+      
+      let movieGeometry = new THREE.PlaneGeometry(5,5);
+      //let movieGeometry = new THREE.BoxGeometry(5,5,5)
+      let movieScreen = new THREE.Mesh(movieGeometry,movieMaterial);
+      movieScreen.position.set(2.5,2.5,5);
+      movieScreen.rotateY((THREE.Math.degToRad(180)));
+      scene.add(movieScreen);
+    
+     
+      // changement de couleur de la monobrosse
+      document.getElementById("disc").addEventListener("click",changeColor);     
+        var lastColorClickedIndex = 0
+        function changeColor(color) {
+        
+        var colors =["green","red","blue","lightgreen","purple","white","black"]
+      
+        var color = colors[(lastColorClickedIndex + 1) % colors.length]; 
+        lastColorClickedIndex = (lastColorClickedIndex + 1) % colors.length
+        console.log("color")
+        var disc = circle.material;
+      // Update the material's color property
+       disc.color.set(color);
+      // Update the material
+      material.needsUpdate = true;
+     }
+      
+      // changement de sol
+
+ document.getElementById("sol").addEventListener("click", function() {
+  switchTexture();
+ });          
+
+var lastClickedTextureIndex = 0;      
+function switchTexture() { 
+   
+   console.log("switchTexture")
+  // console.log(lastClickedTextureIndex)
+ 
+  var textures = ["https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/parquet.jpg?v=1675152195035",
+                  "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/carrelage.jpg?v=1675268522240",
+                  "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/thermoplastique.jpg?v=1675343582559",
+                 "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/marbre.jpg?v=1675343654491",
+                 "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/wool.jpg?v=1675343763042"];
+// //console.log(textures)
+//   // Get the next texture
+   var texture = textures[(lastClickedTextureIndex + 1) % textures.length]; 
+//   console.log((lastClickedTextureIndex + 1) % textures.length)
+  console.log(texture)
+  var appliedTexture = new THREE.TextureLoader().load(texture);
+
+  // Update the last clicked texture index
+lastClickedTextureIndex = (lastClickedTextureIndex + 1) % textures.length;
+  
+   // Get the material of the object you want to change
+ var materialSol = planeSol.material;    
+ // console.log(materialSol)
+  // Update the material's map property to switch to the new texture
+   materialSol.map = appliedTexture
+  // Update the material
+  materialSol.needsUpdate = true;
+}
+      
+//  mouvements de la monobrosse 
+let animationId;
+document.getElementById("animate").addEventListener("click",startAnimation);
+     
+  const stopBtn = document.getElementById("stopBtn"); 
+  stopBtn.addEventListener("click", function() {
+    console.log("stopAnimation");
+    cancelAnimationFrame(animationId);
+  });
+  
+function startAnimation() {
+  animationId = requestAnimationFrame(goToStart);
+  
+}
+
+  let circles = [];     
+  function drawCircle(x, y) {
+  const circleGeometry = new THREE.CircleBufferGeometry(1, 32, 0, Math.PI * 2);
+  circleGeometry.rotateX(THREE.Math.degToRad(90));
+  const circleMaterial = new THREE.MeshBasicMaterial({ color: 0xFFE1F5FE, side: THREE.DoubleSide, opacity:0.05, transparent:true});
+  const circle = new THREE.Mesh(circleGeometry, circleMaterial);      
+  circle.position.set(x, 0, y);      
+ // circles.push(circle);
+  scene.add(circle);
+}
+      var angle = 0;
+      var tetha = 0;
+      var r = 3; // decalage X
+      var s = 3; //decalage z
+      var g = 0;  // variable pour goToStart
+      
+      function basculeDown(){
+      angle += 0.01;
+      angle =  THREE.Math.clamp(angle, 0, Math.PI / 2);
+      groupMono.rotation.x = angle; 
+        requestAnomationFrame = (basculeDown);
+        
+      }
+      
+      function goToStart(){
+         //rotation verticale basculement monobrosse pour roulage
+  
+      //groupMono.rotation.x -= 0.05;
+      angle -= 0.01;
+      angle =  THREE.Math.clamp(angle, -0.5, Math.PI / 2);
+      groupMono.rotation.x = angle;     
+        // mouvement vers le point de depart   
+        if(groupMono.position.x<4){
+          groupMono.position.x =g;
+          groupMono.position.z = g;
+          groupMono.position.y = g/10;
+          //  circle.position.x = g;
+          // circle.position.z = g;
+          g = g+0.05;
+          renderer.render(scene, camera);
+          animationId = requestAnimationFrame(goToStart);        
+        }
+        else{
+            basculeDown(); 
+            animateGroup(); 
+        } 
+      }  
+       function animateGroup() {
+         if (groupMono.position.x >= -4) { 
+       
+          // move gltf
+         groupMono.position.x =r + 0.5 * Math.cos(tetha);
+          groupMono.position.z = s+ 0.5 * Math.sin(tetha);
+           var abs=groupMono.position.x;
+          var ord=groupMono.position.z;     
+          var abs=groupMono.position.x;
+          var ord=groupMono.position.z;
+          drawCircle(abs,ord); 
+          tetha += 0.05;
+          r = r - 0.01;            
+          // render the scene
+           renderer.render(scene, camera);
+
+           animationId= requestAnimationFrame(animateGroup);
+                        
+        }
+        else{
+        animate2Group()
+        }
+        controls.enabled = true; 
+        
+      }
+       function animate2Group() {   
+          if (s > 0.3) {          
+            groupMono.position.z = s;
+             var abs=groupMono.position.x;
+             var ord=groupMono.position.z;
+            
+             drawCircle(abs,ord);
+        //   circle.position.z = ord
+           // console.log(s);        
+            s = s - 0.05;
+          animationId = requestAnimationFrame(animate2Group); 
+
+           renderer.render(scene, camera);       
+        }
+        else{
+          animate3Group();   
+          }
+       }
+               function animate3Group() {
+                // test sur x
+                          if (groupMono.position.x <= 4) {
+                            groupMono.position.x = r + 0.5 * Math.cos(tetha);
+                            groupMono.position.z = s + 0.5 * Math.sin(tetha);
+                            var abs=groupMono.position.x;
+                            var ord=groupMono.position.z; 
+                            // circle.position.x = abs;
+                            // circle.position.z = ord;                                  
+                            drawCircle(abs,ord);
+                            tetha += 0.05;
+                            r = r + 0.01;
+                          animationId =requestAnimationFrame(animate3Group);
+ 
+                   renderer.render(scene, camera);   
+              }
+           }
+  
+    </script>
+<!--     <script  src = "webcam.js"></script>  -->
+<!--     <script src="videos.js"></script> -->
+
+</body> 
+</html>

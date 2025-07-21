@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.0.0/html2canvas.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/renderers/CSS3DRenderer.js"></script>
+
+    <link rel="stylesheet" href="myStyle.css">
+  </head>
+ 
+  <body > 
+    
+
+    <div>
+      <canvas id = "myCanvas"></canvas>
+    
+      </div>
+      <div>
+      
+       
+    <script src = "createScene.js"></script>
+  
+<!--     // add script basicscene////////////////////////////// -->
+    <script>
+      
+     var image = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/balayage%20godille?v=1680771845538";
+     var url = "https://cdn.glitch.me/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/balayage.mp4?v=1680015748374";//video materiel
+     var script = document.createElement("script");
+    script.src ="basicScene.js?url=" + encodeURIComponent(url)+"&image=" + encodeURIComponent(image);
+    document.body.appendChild(script);
+    </script> 
+ 
+    <script>
+      
+    var balaiPlat = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/balaiSmall.glb?v=1678806582357"
+    var balise ="https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/balise.glb?v=1679045704585";
+         camera.position.set(2, 10, -5);
+     camera.lookAt(2,3,10);
+      
+    //chargement des objets balaiPlat et Balise
+      function loadBalai(){
+      var loader = new THREE.GLTFLoader();
+      loader.load(  "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/balaiSmall.glb?v=1678806582357", function (gltf) {
+          balaiPlat= gltf;
+         
+          var gltfObject = balaiPlat.scene.children[0]; 
+          console.log(gltfObject);    
+          gltfObject.position.set(0,0,0);
+          gltfObject.rotateY(THREE.Math.degToRad(-180))
+          gltfObject.scale.set(.3,.3,.2);
+          gltfObject.name = "balaiPlat";
+          scene.add(gltfObject);     
+     
+        
+          const blueMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+          const redMaterial = new THREE.MeshBasicMaterial({ color: 0xFFE1F5FE });
+        
+                gltfObject.traverse(function(child) { // Traverse the object's hierarchy
+                      if (child.isMesh) {
+                        child.material = blueMaterial;
+                        //child.material = redMaterial;
+                      }
+                } ); 
+        });
+   
+   } 
+        function loadBalise(){
+    
+      var loader = new THREE.GLTFLoader();
+      loader.load(  "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/balise.glb?v=1679045704585", function (gltf) {
+             
+          var gltfObject = gltf.scene.children[0]; 
+          console.log(gltfObject);    
+          gltfObject.position.set(-6,1,-5);
+          gltfObject.scale.set(.1,.1,.1);
+          scene.add(gltfObject);
+        
+              const yellow =  new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                  gltfObject.traverse(function(child) { // Traverse the object's hierarchy
+                      if (child.isMesh) {
+                        child.material = yellow;
+                        //child.material = redMaterial;
+                      }
+                });
+    
+      });
+   }
+        loadBalai();
+        loadBalise();
+    //  console.log(balaiPlat);
+         // animate the scene
+ 
+      
+      //mise en place du traçage
+      
+let drawing = false;
+let isMouseMoving = false;
+ let isTouchMoving = false     
+      
+// document.addEventListener('mousemove', function() {
+//   isMouseMoving = true;
+//   //controls.enabled = false;
+// });
+      
+  document.addEventListener('mouseup', function() {
+  isMouseMoving = false;
+ //controls.enabled = true;
+});
+      
+  document.addEventListener( 'click', () => {
+  drawing = true;
+    
+        
+});
+      
+        // Set up mousemove event
+      var isMouseMoveEnabled=true;
+      let points =[];
+      // en cas de ligne normale
+    // let material = new THREE.LineBasicMaterial({ color: 0xff0000 , lineWidth :20})
+      
+ renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false); 
+      
+      let rectangles = [];
+
+      function drawRectangle(x,y){
+   
+        const rectGeo = new THREE.PlaneGeometry(1.8,1.2);
+        const rectMat = new THREE.MeshBasicMaterial({ color: "white",side: THREE.DoubleSide, opacity:0.1, transparent:true });
+        const rect = new THREE.Mesh(rectGeo, rectMat);
+        rect.position.set(x,0,y);
+        rect.rotateX(THREE.Math.degToRad(-90));
+        scene.add(rect);
+      }
+
+      function onDocumentMouseMove(event) {
+  if (!drawing) return;
+  if (!isMouseMoveEnabled) return;
+
+  // Define the raycaster
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  // Get the intersection point
+  const intersects = raycaster.intersectObject(scene.getObjectByName("sol"));
+  if (intersects.length > 0) {
+    
+    
+    const point = intersects[0].point;
+    console.log(point);
+    
+    // Add point to the line
+    points.push(new THREE.Vector3(point.x,0, point.z));
+    
+    //drawrectangles
+    drawRectangle(point.x, point.z);
+    
+    
+      // Create the line and add it to the scene
+   let geometry = new THREE.Geometry();
+   geometry.setFromPoints( points );
+   var lineMaterial = new THREE.LineBasicMaterial({ color:"red", linewidth: 10, vertexColors: true });
+
+line = new THREE.Line( geometry, lineMaterial );
+scene.add( line );
+    
+    
+     // Position and rotate the "balaiPlat" object
+   
+    const direction = new THREE.Vector3(point.x, 0, point.z).sub(scene.getObjectByName("balaiPlat").position).normalize().multiplyScalar(0.00001);
+    scene.getObjectByName("balaiPlat").lookAt(scene.getObjectByName("balaiPlat").position.clone().add(direction));
+    //scene.getObjectByName("balaiPlat").position.set(point.x,0,point.z);
+    scene.getObjectByName("balaiPlat").position.copy(point);
+    //  // Adjust the pivot point of the object
+    // scene.getObjectByName("balaiPlat").children[0].geometry.center();
+    // scene.getObjectByName("balaiPlat").updateMatrix();
+    scene.getObjectByName("balaiPlat").rotateY(THREE.Math.degToRad(-180))
+   
+    renderer.render(scene, camera);
+  }
+}
+
+      // Set up doubleclick event
+renderer.domElement.addEventListener('dblclick', onDocumentDoubleClick, false);
+      
+      function onDocumentDoubleClick(event){
+          event.preventDefault();
+          isMouseMoveEnabled = false;
+          drawing = false;
+       
+     }
+
+  document.addEventListener("touchstart", onTouchStart);
+  document.addEventListener("touchmove", onDocumentTouchMove);
+      
+      function onTouchStart(event){
+        event.preventDefault();
+        
+          const touch = event.touches[ 0 ];
+    const x = ( touch.clientX / window.innerWidth ) * 2 - 1;
+    const y = - ( touch.clientY / window.innerHeight ) * 2 + 1;
+      
+        
+  // Define the raycaster
+  const raycaster = new THREE.Raycaster();
+
+   raycaster.setFromCamera( new THREE.Vector2( x, y ), camera );
+
+  // Get the intersection point
+  const intersects = raycaster.intersectObject(scene.getObjectByName("sol"));
+  if (intersects.length > 0) {
+    
+       drawing = true;
+         controls.enabled = false;
+        
+     const balaiPlat = scene.getObjectByName("balaiPlat");
+         const redMat = new THREE.MeshBasicMaterial({ color: 0xFFE1F5FE });
+        balaiPlat.traverse(function(child){
+           if (child.isMesh) {
+                        child.material = redMat;
+        }
+});
+      }
+ }
+      
+      
+       var isTouchMoveEnabled=true;
+          
+      function onDocumentTouchMove(event){
+        event.preventDefault();
+       // controls.enabled = false;
+        
+                //repeat onDocumentMouseMove
+       if (!drawing) return;
+      if (!isTouchMoveEnabled) return;
+      // Trigger the mouse move event
+     
+    const touch = event.touches[ 0 ];
+    const x = ( touch.clientX / window.innerWidth ) * 2 - 1;
+    const y = - ( touch.clientY / window.innerHeight ) * 2 + 1;
+      
+        
+  // Define the raycaster
+  const raycaster = new THREE.Raycaster();
+
+   raycaster.setFromCamera( new THREE.Vector2( x, y ), camera );
+
+  // Get the intersection point
+  const intersects = raycaster.intersectObject(scene.getObjectByName("sol"));
+  if (intersects.length > 0) {
+    
+    
+    const point = intersects[0].point;
+    console.log(point);
+    
+    // Add point to the line
+    points.push(new THREE.Vector3(point.x,0, point.z));
+    
+    //drawrectangles
+    drawRectangle(point.x, point.z);
+     
+      // Create the line and add it to the scene
+   let geometry = new THREE.Geometry();
+   geometry.setFromPoints( points );
+   var lineMaterial = new THREE.LineBasicMaterial({ color:"red", linewidth: 10, vertexColors: true });
+
+line = new THREE.Line( geometry, lineMaterial );
+scene.add( line );
+    
+     // Position and rotate the "balaiPlat" object
+   
+    const direction = new THREE.Vector3(point.x, 0, point.z).sub(scene.getObjectByName("balaiPlat").position).normalize().multiplyScalar(0.1);
+    scene.getObjectByName("balaiPlat").lookAt(scene.getObjectByName("balaiPlat").position.clone().add(direction));
+    //scene.getObjectByName("balaiPlat").position.set(point.x,0,point.z);
+    scene.getObjectByName("balaiPlat").position.copy(point);
+    //  // Adjust the pivot point of the object
+    // scene.getObjectByName("balaiPlat").children[0].geometry.center();
+    // scene.getObjectByName("balaiPlat").updateMatrix();
+    scene.getObjectByName("balaiPlat").rotateY(THREE.Math.degToRad(-180))
+   
+    renderer.render(scene, camera);
+  }
+}
+      // add a touchend event listener to the renderer element
+//renderer.domElement.addEventListener('touchend', function(event) {
+       
+  document.addEventListener('touchend', function() {
+  isTouchMoving = false;
+ controls.enabled = true;
+});
+      
+      document.addEventListener('double-tap',function(){
+        controls.enabled = true;
+      });
+
+
+                   
+      function animate() {
+      requestAnimationFrame(animate);
+        if(!isMouseMoving){
+       controls.update();
+        }
+        if(!isTouchMoving){
+      renderer.render(scene, camera);
+        }
+    }
+    animate();
+       </script>
+
+</body> 
+</html>
