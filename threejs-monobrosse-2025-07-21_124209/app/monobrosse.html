@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.0.0/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/renderers/CSS3DRenderer.js"></script>
+
+    <link rel="stylesheet" href="myStyle.css">
+  </head>
+ 
+  <body > 
+   
+
+    <div>
+      <canvas id = "myCanvas"></canvas>
+      
+<button id = "sol" hidden>sol</button>
+<button id = "disc" hidden>disque</button>
+<button id = "animate" hidden>animer</button>
+            
+      </div>
+      <div >     
+        <button id="start-recording" hidden>play 
+           <span id="recording-indicator" style = "display:none"></span> 
+        </button>
+        <button id="stop-recording" hidden>pause</button> -->
+       
+      </div>  
+ 
+    <script src = "createScene.js"></script>
+<!--     // add script basicscene//////////////////////////// -->
+
+    
+     <script>
+      
+     var image = "https://cdn.glitch.global/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/monoLavageMecanis%C3%A9?v=1680773053472";
+     var url = "https://cdn.glitch.me/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/lavageMecanise.mp4?v=1680016345681";//video lavage mecanisé
+     var script = document.createElement("script");
+    script.src ="basicScene.js?url=" + encodeURIComponent(url)+"&image=" + encodeURIComponent(image);
+    document.body.appendChild(script);
+    </script> 
+   <script src = "monobrosseSwitchMove.js"></script>
+    
+ <script>
+    // add raycaster
+var raycaster = new THREE.Raycaster(); // Create a new Raycaster
+ if(isMobile())  {
+   
+   console.log("ismobile"+isMobile());
+   console.log(navigator.userAgent);
+window.addEventListener('touchstart', onTouchStart, false);
+// window.addEventListener('touchmove', onTouchMove, false);
+   
+ } else{
+    
+window.addEventListener('mousemove', onMouseMove, false); // Add a mousemove event listener to the window object
+window.addEventListener('click', onClick, false); // Add a click event listener to the window object
+ } 
+    
+function isMobile(){
+// Check the user agent string to see if it contains "Mobile"
+  return /Mobi/i.test(navigator.userAgent);  
+}
+
+  var mouse = new THREE.Vector2(); // Create a new Vector2 to store the mouse coordinates
+
+function onMouseMove(event) {
+  // Calculate the mouse position relative to the viewport
+    
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+    function onClick(event) {
+  // Use the Raycaster to check for intersections between the mouse and the objects in the scene
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(scene.children, true);
+
+  // If there is at least one intersection, trigger your function
+  if (intersects.length > 0) {
+    
+    var object = intersects[0].object;
+    
+ //   console.log(object);
+    if (object.name === 'node_id9'){
+      
+      console.log("animate");
+     // let animationId;
+      startAnimation();
+    }  
+  if (object.name === 'videoPlane'){
+                if (clip.paused) {
+      clip.play();
+    } else {
+      clip.pause();
+    }
+    }  
+    }
+      
+ }
+      function onTouchStart(event){
+      event.preventDefault();
+
+  const touch = event.touches[ 0 ];
+  const x = ( touch.clientX / window.innerWidth ) * 2 - 1;
+  const y = - ( touch.clientY / window.innerHeight ) * 2 + 1;
+
+  raycaster.setFromCamera( new THREE.Vector2( x, y ), camera );
+       var intersects = raycaster.intersectObjects(scene.children, true);
+       if (intersects.length > 0) {
+            var object = intersects[0].object;
+    
+    console.log(object);
+    if (object.name === 'node_id9'){
+      startAnimation();
+    }  
+  if (object.name === 'videoPlane'){
+               if (clip.paused) {
+      clip.play();
+    } else {
+      clip.pause();
+    }
+    }  
+    }
+      
+ }
+
+    
+</script>
+</body> 
+</html>

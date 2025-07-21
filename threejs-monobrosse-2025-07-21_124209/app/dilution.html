@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+<!-- 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"> -->
+		<link type="text/css" rel="stylesheet" href="myStyle.css">
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115.0/examples/js/renderers/CSS3DRenderer.js"></script>
+	</head>
+	
+  <body>
+    <div id = "container"></div>
+    <script>
+const THREE = window.THREE;
+const CSS3DRenderer = window.THREE.CSS3DRenderer;
+const CSS3DObject = window.THREE.CSS3DObject;
+
+  const container = document.getElementById('container');
+
+ // Initialize CSS3DRenderer
+renderer = new THREE.CSS3DRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.domElement.style.position = 'absolute';
+renderer.domElement.style.top = 0;
+container.appendChild(renderer.domElement);
+
+  // Initialize CSS3D scene
+  cssScene = new THREE.Scene();
+
+  // Add video object
+  videoObj = new Element('https://cdn.glitch.me/5bd793e6-3c08-44e5-bec2-8b45b68b56c7/dilution.mp4?v=1680003408762',
+                         -100, 0,150,-Math.PI/3);
+  cssScene.add(videoObj);
+
+  // Add HTML object
+  htmlObj = new Element('./dosage.html',
+                        100, 0, 150,+Math.PI/3);// -Math.PI / 2
+  cssScene.add(htmlObj);
+//   cssScene.add(light);   
+      
+      //add bidon
+      bidonObj = new Element('./produit.html',
+                             0,0,0,Math.PI);
+     cssScene.add(bidonObj);
+      // //add stickerReader
+      // stickerReaderObj = new Element('https://apichat.glitch.me/',0,0,0,Math.PI);
+      // cssScene.add(stickerReaderObj);
+      
+camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
+camera.position.set(0, 0,-800);
+
+camera.lookAt(0,0,300);
+      
+const OrbitControls = window.THREE.OrbitControls;  
+controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.rotateSpeed = 0.5;
+      
+
+function animate() {
+  requestAnimationFrame(animate);
+ //videoObj.ro// renderer.render(scene, camera);
+ renderer.render(cssScene, camera);
+  controls.update();
+}
+
+function Element(id, x, y, z, ry) {
+  const div = document.createElement('div');
+  div.style.width = '330px';
+  div.style.height = '350px';
+  div.style.backgroundColor = 'lightGray';
+//div.style.backfaceVisibility = 'hidden';
+
+  const iframe = document.createElement('iframe');
+  iframe.style.width = '330px';
+  iframe.style.height = '350px';
+  iframe.style.border = '0px';
+  //iframe.src = ['https://www.youtube.com/embed/', id, '?rel=0'].join('');
+  iframe.src = id;
+  div.appendChild(iframe);
+
+  const object = new CSS3DObject(div);
+  object.position.set(x, y, z);
+  object.rotation.y = ry;
+
+  return object;
+}
+
+
+animate();
+
+
+    </script>
+	</body>
+</html>

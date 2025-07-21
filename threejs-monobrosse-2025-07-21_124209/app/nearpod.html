@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="https://glitch.com/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+ 
+
+    <title>controle connaissance</title>
+  
+  
+  </head>
+  <body>
+ <div id="nearpod-container"></div>
+<script>
+  // Get a reference to the container element
+  var container = document.getElementById("nearpod-container");
+
+  // Set the embed code or URL from Nearpod
+  var embedCode = "https://app.nearpod.com/?pin=A93C9D32D8340CA516454AEEF24629C2-1&&utm_source=link";
+
+  // Create an iframe element
+  var iframe = document.createElement("iframe");
+
+  // Set the src attribute of the iframe to the Nearpod exercise URL
+  iframe.src = embedCode;
+
+  // Set the width and height of the iframe if desired
+  iframe.width = "100%";
+  iframe.height = "600px";
+
+  // Append the iframe to the container
+  container.appendChild(iframe);
+</script>
+
+
+
+  </body>
+</html>
